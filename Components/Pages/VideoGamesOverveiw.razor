@@ -1,0 +1,78 @@
+﻿@page "/"
+@page "/games"
+@inject IVideoGameService VideoGameService
+@rendermode InteractiveServer
+
+<PageTitle>Video Games</PageTitle>
+<h3>Video Games</h3>
+
+@if (videoGames.Count == 0)
+{
+    if (isAllGamesDeleted == false)
+    {
+        <p><em>There is no Video Games</em></p>
+
+        <a class="btn btn-success" href="edit-game">Add a New Game</a>
+    }
+    else
+    {
+        <p><em>You had delted all games</em></p>
+        <a class="btn btn-success" href="edit-game">Add a New Game</a>
+    }
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Publisher</th>
+                <th>Release Year</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in videoGames)
+            {
+                <tr>
+                    <td>@game.Title</td>
+                    <td>@game.Publisher</td>
+                    <td>@game.ReleaseYear</td>
+                    <td><a class="btn btn-primary" href="edit-game/@game.Id">Edit</a></td>
+                    <td><button class="btn btn-danger" @onclick="() => DeleteGame(game.Id)">Delete</button></td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a class="btn btn-success" href="edit-game">Add a New Game</a>
+}
+
+@code {
+    List<VideoGame> videoGames = new List<VideoGame>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        videoGames = await VideoGameService.GetAllGamesAsync();
+    }
+
+    bool isAllGamesDeleted = false;
+
+    async Task DeleteGame(int id)
+    {
+        await VideoGameService.DeleteGameAsync(id);
+
+        // ReInitialize after delete the games again
+        videoGames = await VideoGameService.GetAllGamesAsync();
+
+        if (videoGames.Count == 0) { isAllGamesDeleted = true; }
+
+        Console.WriteLine($"Is All Games Delted: {isAllGamesDeleted}");
+
+    }
+
+
+
+}
